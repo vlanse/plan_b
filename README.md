@@ -1,4 +1,4 @@
-# PLAN_B
+# plan_b
 Utility for mid and long-range planning of software releases. For now it only works with a Jira
 as issues data source and outputs result as an xlsx file.
 
@@ -10,13 +10,14 @@ git clone https://github.com/vlanse/plan_b.git && cd plan_b
 virtualenv -p python3.6 env; . env/bin/activate;
 pip install -Ue .
 ```
+plan_b script will be installed in virtualenv bin folder
 
 ## Usage
 To use CLI you will first need configuration file. 
 Sample configuration file is located at `tests/data/config-test.yml`
 After configuration file is ready, CLI could be used like
 ```bash
-cli --config=<path-to-config-file>
+plan_b --config=<path-to-config-file>
 ```
 
 ## Features to be done
