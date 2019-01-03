@@ -60,8 +60,14 @@ def write_row(
             raise RuntimeError('either cell_generator or col_count must be not None')
 
     for item in cell_generator:
+
+        cell_write_func = sheet.write
         if isinstance(item, list):
-            value, cell_format = item[0], item[1]
+            if isinstance(item[0], dict):
+                value, cell_write_func_name = item[0], item[1]
+                cell_write_func = getattr(sheet, cell_write_func_name)
+            else:
+                value, cell_format = item[0], item[1]
         else:
             value = item
             cell_format = cell_format
@@ -70,7 +76,10 @@ def write_row(
         if isinstance(cell_value, str) and cell_value.startswith('='):
             sheet.write_formula(offset.row, column, cell_value, cell_format)
         else:
-            sheet.write(offset.row, column, cell_value, cell_format)
+            if isinstance(cell_value, dict):
+                cell_write_func(offset.row, column, **cell_value)
+            else:
+                cell_write_func(offset.row, column, cell_value, cell_format)
         column += 1
 
     columns_written = column - offset.column

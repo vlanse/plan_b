@@ -35,7 +35,10 @@ def _get_format_for_confidence_level(level: int, border_pos: BorderPos):
 def _create_cells_for_issue(issue: Issue, teams: List[Team], offset: Pos) -> List:
     dev_teams = [team for team in teams if team.is_dev()]
 
-    values = [issue.issue_summary, ]
+    values = [
+        [{'url': issue.issue_url, 'string': issue.issue_key}, 'write_url'],
+        issue.issue_summary,
+    ]
 
     # requirements confidence level
     reqs_level = 0 if issue.owned_by_team and issue.owned_by_team.is_qa() else \
@@ -321,11 +324,7 @@ def _create_dev_activities_table(
 
     for row in range(0, len(dev_owned_issues)):
         issue = dev_owned_issues[row]
-        rel_offset = RelPos(header_table.pos_below(), row, 1)
-
-        row_start_pos = RelPos(header_table.pos_below(), row, 0)
-        sheet.write_url(row_start_pos.row, row_start_pos.column, issue.issue_url, string=issue.issue_key)
-
+        rel_offset = RelPos(header_table.pos_below(), row)
         write_row(
             sheet,
             rel_offset,
@@ -410,7 +409,10 @@ def _create_qa_activities_table_header(sheet, qa_teams: List[Team], offset: Pos)
 
 
 def _create_cells_for_qa_issue(issue: Issue, qa_teams: List[Team], offset: Pos) -> List:
-    values = [issue.issue_summary]
+    values = [
+        [{'url': issue.issue_url, 'string': issue.issue_key}, 'write_url'],
+        issue.issue_summary
+    ]
 
     # qa effort
     for i in range(len(qa_teams)):
@@ -445,11 +447,7 @@ def _create_qa_activities_table(
     total_cells_by_teams = {}
     for row in range(0, len(qa_owned_issues)):
         issue = qa_owned_issues[row]
-        rel_offset = RelPos(header_table.pos_below(), row, 1)
-
-        row_start_pos = RelPos(header_table.pos_below(), row, 0)
-        sheet.write_url(row_start_pos.row, row_start_pos.column, issue.issue_url, string=issue.issue_key)
-
+        rel_offset = RelPos(header_table.pos_below(), row)
         write_row(
             sheet,
             rel_offset,
