@@ -313,6 +313,24 @@ def _create_release_table_header(sheet, teams: List[Team], offset=Pos()) -> Regi
     return Region(RelPos(offset), 3, column_count)
 
 
+def _add_totals_row(sheet, region: Region, skip_columns: int = 0):
+    totals = []
+    for column in range(0, region.columns):
+        if column == 0:
+            totals.append('Total')
+        elif column >= skip_columns:
+            totals.append(
+                f'=SUM('
+                f'{RelPos(region.offset, column=column).to_cell()}'
+                f':{RelPos(region.offset, region.rows - 1, column).to_cell()}'
+                f')'
+            )
+        else:
+            totals.append('')
+    offset = RelPos(region.offset, region.rows)
+    write_row(sheet, offset, totals, cell_format=formats.bold_total_format)
+
+
 def _create_dev_activities_table(
     sheet, product_release: ProductRelease, teams: List[Team], offset=Pos()
 ) -> Tuple[Dict[Team, CellReference], Region]:
@@ -333,21 +351,7 @@ def _create_dev_activities_table(
         )
 
     # totals row
-    totals = []
-    for column in range(0, header_table.columns):
-        if column == 0:
-            totals.append('Total')
-        elif column > 3:
-            totals.append(
-                f'=SUM('
-                f'{RelPos(header_table.pos_below(), column=column).to_cell()}'
-                f':{RelPos(header_table.pos_below(), len(dev_owned_issues) - 1, column).to_cell()}'
-                f')'
-            )
-        else:
-            totals.append('')
-    offset = RelPos(header_table.pos_below(), len(dev_owned_issues))
-    write_row(sheet, offset, totals, cell_format=formats.bold_total_format)
+    _add_totals_row(sheet, Region(header_table.pos_below(), len(dev_owned_issues), header_table.columns), 4)
 
     # adjust column widths
     sheet.set_column(
@@ -466,21 +470,8 @@ def _create_qa_activities_table(
             col += 1
 
     # totals row
-    totals = []
-    for column in range(0, header_table.columns):
-        if column == 0:
-            totals.append('Total')
-        elif column > 1:
-            totals.append(
-                f'=SUM('
-                f'{RelPos(header_table.pos_below(), column=column).to_cell()}'
-                f':{RelPos(header_table.pos_below(), len(qa_owned_issues) - 1, column).to_cell()}'
-                f')'
-            )
-        else:
-            totals.append('')
-    offset = RelPos(header_table.pos_below(), len(qa_owned_issues))
-    write_row(sheet, offset, totals, cell_format=formats.bold_total_format)
+    _add_totals_row(sheet, Region(header_table.pos_below(), len(qa_owned_issues), header_table.columns), 2)
+
     return \
         total_cells_by_teams, \
         Region(header_table.offset, header_table.rows + len(qa_owned_issues) + 1, header_table.columns)

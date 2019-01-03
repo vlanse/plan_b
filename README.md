@@ -22,6 +22,8 @@ After configuration file is ready, CLI could be used like
 ```bash
 plan_b --config=<path-to-config-file> --destination=<destination xlsx file path>
 ```
+Sample plan created with example config (using mock Jira implementation)
+could be downloaded [here](tests/data/test.xlsx)
 
 ## Features to be done
 * Service with REST API to enable easier sharing results with multiple people
