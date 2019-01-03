@@ -121,6 +121,8 @@ class TestPlanExport(TestCase):
         jira_mock().search_issues = Mock(side_effect=issues_side_effect)
         jira_mock().comments = Mock(side_effect=comments_side_effect)
 
+        data_dir_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
         do_work(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'config-test.yml')
+            os.path.join(data_dir_path, 'config-test.yml'),
+            os.path.join(data_dir_path, 'test.xlsx')
         )

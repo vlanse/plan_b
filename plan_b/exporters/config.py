@@ -89,11 +89,12 @@ def make_production_calendar(calendar_description: dict) -> defaultdict:
 
 class XlsxCapacityPlan(CapacityPlan):
 
-    def __init__(self, output_file_path: str, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._output_file = output_file_path
+        self._output_file = None
 
-    def export(self):
+    def export(self, output_file_path):
+        self._output_file = output_file_path
         plan_edits = None
         if os.path.exists(self._output_file):
             log.info('Output file %s already exists, trying to load its content and scan for changes', self._output_file)
@@ -142,7 +143,6 @@ def make_capacity_plan_from_config(config_file_path: str) -> XlsxCapacityPlan:
         raise RuntimeError(f'Invalid plan data source configuration for "{ds_name}", found {len(data_sources)} items')
 
     return XlsxCapacityPlan(
-        output_file_path=p['output_file'],
         start_date=p['period']['start_date'],
         end_date=p['period']['end_date'],
         production_calendar=make_production_calendar(config.get('production_calendar', dict())),

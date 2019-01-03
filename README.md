@@ -1,4 +1,6 @@
 # plan_b
+[![Build Status](https://travis-ci.org/vlanse/plan_b.svg?branch=master)](https://travis-ci.org/vlanse/plan_b)
+
 Utility for mid and long-range planning of software releases. For now it only works with a Jira
 as issues data source and outputs result as an xlsx file.
 
@@ -14,10 +16,10 @@ plan_b script will be installed in virtualenv bin folder
 
 ## Usage
 To use CLI you will first need configuration file. 
-Sample configuration file is located [here](tests/data/config-test.yml)
+Sample configuration file is located [here](tests/data/config-test.yml).
 After configuration file is ready, CLI could be used like
 ```bash
-plan_b --config=<path-to-config-file>
+plan_b --config=<path-to-config-file> --destination=<destination xlsx file path>
 ```
 
 ## Features to be done

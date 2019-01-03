@@ -65,7 +65,6 @@ releases:
     data_query: some other query for B2U4
 
 plan:
-  output_file: ./data/test.xlsx
   data_source: jira
 
   period:
