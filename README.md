@@ -14,7 +14,7 @@ plan_b script will be installed in virtualenv bin folder
 
 ## Usage
 To use CLI you will first need configuration file. 
-Sample configuration file is located at `tests/data/config-test.yml`
+Sample configuration file is located [here](tests/data/config-test.yml)
 After configuration file is ready, CLI could be used like
 ```bash
 plan_b --config=<path-to-config-file>
