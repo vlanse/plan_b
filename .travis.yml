@@ -9,7 +9,10 @@ env:
     - LC_ALL=en_US.UTF-8
 
 install:
-  - pip install pytest
+  - pip install pytest pytest-cov codecov
   - pip install .
 
-script: pytest
+script: pytest --cov=./
+
+after_success:
+  - codecov

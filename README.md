@@ -1,5 +1,6 @@
 # plan_b
 [![Build Status](https://travis-ci.org/vlanse/plan_b.svg?branch=master)](https://travis-ci.org/vlanse/plan_b)
+[![codecov](https://codecov.io/gh/vlanse/plan_b/branch/master/graph/badge.svg)](https://codecov.io/gh/vlanse/plan_b)
 
 Utility for mid and long-range planning of software releases. For now it only works with a Jira
 as issues data source and outputs result as an xlsx file.
