@@ -3,16 +3,10 @@ language: python
 python:
   - "3.6"
 
-env:
-  global:
-    - LANG=en_US.UTF-8
-    - LC_ALL=en_US.UTF-8
-
 install:
-  - pip install pytest pytest-cov codecov
-  - pip install .
+  - pip install codecov
 
-script: pytest --cov=./
+script: make test
 
 after_success:
   - codecov

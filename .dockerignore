@@ -1,0 +1,10 @@
+*
+!plan_b/
+!tests/
+!setup.py
+!README.md
+!requirements.txt
+
+**/*.pyc
+**/*.pyo
+**/__pycache__

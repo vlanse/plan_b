@@ -1,0 +1,15 @@
+FROM python:3.6-alpine
+
+ARG TESTS_IMAGE_APK_DEPENDENCIES
+
+# setup everything for building dependencies
+
+RUN apk add --no-cache --virtual .build-deps $TESTS_IMAGE_APK_DEPENDENCIES \
+    && pip install pytest pytest-cov codecov
+
+# install needed dependencies and copy sources to container
+
+COPY ./requirements.txt /requirements.txt
+RUN pip install -r /requirements.txt
+
+COPY . /sources/

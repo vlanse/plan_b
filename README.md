@@ -10,20 +10,19 @@ as issues data source and outputs result as an xlsx file.
 
 ```bash
 git clone https://github.com/vlanse/plan_b.git && cd plan_b
-virtualenv -p python3.6 env; . env/bin/activate;
-pip install -Ue .
+make develop # virtualenv with installed dependencies will be created
 ```
 plan_b script will be installed in virtualenv bin folder
 
 ## Usage
 To use CLI you will first need configuration file. 
-Sample configuration file is located [here](tests/data/config-test.yml).
+Sample configuration file is located [here](tests/cli/data/config-test.yml).
 After configuration file is ready, CLI could be used like
 ```bash
 plan_b --config=<path-to-config-file> --destination=<destination xlsx file path>
 ```
 Sample plan created with example config (using mock Jira implementation)
-could be downloaded [here](tests/data/test.xlsx)
+could be downloaded [here](tests/cli/data/test.xlsx)
 
 ## Features to be done
 * Service with REST API to enable easier sharing results with multiple people

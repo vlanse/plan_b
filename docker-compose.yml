@@ -1,0 +1,8 @@
+version: "2.1"
+services:
+  tests:
+    image: "${TESTS_IMAGE}"
+    working_dir: /sources
+    command: pytest --cov=./ --cov-report=xml:/mnt/coverage.xml --cov-report=term
+    volumes:
+      - .:/mnt

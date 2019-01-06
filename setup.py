@@ -66,7 +66,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'plan_b = {0}.cli:main'.format(module.__name__),
+            f'plan_b = {module.__name__}.cli:main',
         ]
     },
     install_requires=requires,
