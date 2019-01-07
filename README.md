@@ -5,7 +5,7 @@
 Utility for mid and long-range planning of software releases. For now it only works with a Jira
 as issues data source and outputs result as an xlsx file.
 
-## Installation
+## Installation for development
 [Install python 3.6](https://www.python.org/downloads/) and virtualenv package (`pip3.6 install virtualenv`).
 
 ```bash
@@ -13,6 +13,12 @@ git clone https://github.com/vlanse/plan_b.git && cd plan_b
 make develop # virtualenv with installed dependencies will be created
 ```
 plan_b script will be installed in virtualenv bin folder
+
+### Database initialization
+The following command will create tables in already existing database schema
+```bash
+db_manage --app-config=config.example.ini upgrade head
+```
 
 ## Usage
 To use CLI you will first need configuration file. 
