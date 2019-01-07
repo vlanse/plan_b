@@ -1,8 +1,28 @@
 version: "2.1"
 services:
+  postgresql:
+    image: postgres:latest
+    expose:
+      - 5432
+    environment:
+      POSTGRES_PASSWORD: qwe123QWE
+      POSTGRES_USER: root
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 1s
+      timeout: 10s
+      retries: 10
+
   tests:
     image: "${TESTS_IMAGE}"
     working_dir: /sources
     command: pytest --cov=./ --cov-report=xml:/mnt/coverage.xml --cov-report=term
+    links:
+      - postgresql
+    depends_on:
+        postgresql:
+          condition: service_healthy
+    environment:
+      MIGRATION_DB_URL: postgresql://root:qwe123QWE@postgresql/plan_b_test_migrations
     volumes:
       - .:/mnt

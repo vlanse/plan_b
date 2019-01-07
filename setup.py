@@ -27,9 +27,14 @@ requires = (
     'jira',
     'openpyxl',
     'XlsxWriter',
-    'PyYAML',
+    'PyYAML>=4.2b1',
     'yarl',
     'python-dateutil',
+    'sqlalchemy',
+    'alembic',
+    'asyncpg==0.18.2',
+    'psycopg2-binary',
+    'gino'
 )
 
 
@@ -67,6 +72,7 @@ setup(
     entry_points={
         'console_scripts': [
             f'plan_b = {module.__name__}.cli:main',
+            f'db_manage = {module.__name__}.db_manage:main',
         ]
     },
     install_requires=requires,

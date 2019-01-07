@@ -1,5 +1,5 @@
 TESTS_IMAGE := plan_b-tests:latest
-TESTS_IMAGE_APK_DEPENDENCIES := build-base libffi-dev openssl-dev
+TESTS_IMAGE_APK_DEPENDENCIES := build-base libffi-dev postgresql-dev
 
 test:
 	docker build . \
