@@ -1,8 +1,8 @@
 from typing import Dict, List, Tuple
 from enum import IntEnum
 
-from plan_b.team import Team
-from plan_b.plan import ProductRelease, Issue
+from plan_b.team import Team, DevTeam
+from plan_b.plan import Project, Issue
 from plan_b.issue import seconds_to_man_weeks
 from plan_b.exporters.xlsx.utils import Pos, RelPos, write_row, Region
 from plan_b.exporters.xlsx.metadata import CellReference
@@ -165,7 +165,7 @@ def _create_cells_for_issue(issue: Issue, teams: List[Team], offset: Pos) -> Lis
     return values
 
 
-def _create_release_table_header(sheet, teams: List[Team], offset=Pos()) -> Region:
+def _create_project_table_header(sheet, teams: List[Team], offset=Pos()) -> Region:
     dev_teams = [team for team in teams if team.is_dev()]
     qa_teams = [team for team in teams if team.is_qa()]
 
@@ -332,13 +332,13 @@ def _add_totals_row(sheet, region: Region, skip_columns: int = 0):
 
 
 def _create_dev_activities_table(
-    sheet, product_release: ProductRelease, teams: List[Team], offset=Pos()
+    sheet, project: Project, teams: List[Team], offset=Pos()
 ) -> Tuple[Dict[Team, CellReference], Region]:
-    dev_owned_issues = [x for x in product_release.issues if x.owned_by_team.is_dev()]
+    dev_owned_issues = [x for x in project.issues if x.owned_by_team.is_dev()]
     if not dev_owned_issues:
         return dict(), Region(offset, 1, 0)
 
-    header_table = _create_release_table_header(sheet, teams, offset)
+    header_table = _create_project_table_header(sheet, teams, offset)
 
     for row in range(0, len(dev_owned_issues)):
         issue = dev_owned_issues[row]
@@ -369,7 +369,7 @@ def _create_dev_activities_table(
     team_column = header_table.offset.column + 11 + 2 * len(dev_teams)
     for team in dev_teams:
         total_cells_by_team[team] = CellReference(
-            Pos(offset.row, team_column, product_release.name), product_release.name
+            RelPos(offset, header_table.pos_below().row + len(dev_owned_issues), team_column, project.name), project.name
         )
         team_column += 1
 
@@ -377,13 +377,80 @@ def _create_dev_activities_table(
     team_column = header_table.offset.column + 12 + 3 * len(dev_teams)
     for team in qa_teams:
         total_cells_by_team[team] = CellReference(
-            Pos(offset.row, team_column, product_release.name), f'{product_release.name} checks'
+            RelPos(offset, header_table.pos_below().row + len(dev_owned_issues), team_column, project.name), f'{project.name} checks'
         )
         team_column += 1
 
     return \
         total_cells_by_team, \
         Region(header_table.offset, header_table.rows + len(dev_owned_issues) + 1, header_table.columns)
+
+
+def _create_known_bugs_table_header(sheet, offset: Pos) -> Region:
+    write_row(
+        sheet,
+        offset,
+        cell_generator=[
+            '',
+            ['Team', formats.centered_header_format],
+            'Known bugs',
+            'New bugs',
+            'Time to fix'
+        ],
+        cell_format=formats.centered_vertical_text_header_format,
+        col_width=5
+    )
+    return Region(offset, 1, 5)
+
+
+def calculate_new_bugs_count_for_project(project: Project, team: Team) -> int:
+    new_bugs_count = 0
+    for issue in project.issues:
+        estimate = issue.orig_estimates_by_team.get(team.name)
+        if estimate is not None:
+            new_bugs_count += \
+                seconds_to_man_weeks(estimate.qa_effort or 0) * 10 + \
+                seconds_to_man_weeks(estimate.implementation or 0) * 2.5
+
+    return int(new_bugs_count)
+
+
+def _create_known_bugs_table(
+    sheet, project: Project, teams: List[Team], offset=Pos()
+) -> Tuple[Dict[Team, CellReference], Region]:
+    dev_teams: List[DevTeam] = [team for team in teams if team.is_dev()]
+
+    header_table = _create_known_bugs_table_header(sheet, offset)
+
+    total_cells_by_teams = {}
+    cells_offset = header_table.pos_below()
+    row = 0
+    for team in dev_teams:
+        write_row(
+            sheet,
+            offset=RelPos(cells_offset, row, 1),
+            cell_generator=[
+                team.name,
+                project.known_bugs_count[team],
+                calculate_new_bugs_count_for_project(project, team),
+                [
+                    f'=SUM('
+                    f'{RelPos(cells_offset, row, 2).to_cell()}:{RelPos(cells_offset, row, 3).to_cell()}'
+                    f') * {team.bugfix_rate} / 5',
+                    formats.bold_total_no_borders_format
+                ]
+            ],
+            cell_format=formats.numeric_format
+        )
+        total_cells_by_teams[team] = CellReference(
+            RelPos(cells_offset, row, 4, sheet_name=project.name),
+            f'{project.name} bugfix'
+        )
+        row += 1
+
+    return \
+        total_cells_by_teams, \
+        Region(header_table.offset, header_table.rows + len(dev_teams), header_table.columns)
 
 
 def _create_qa_activities_table_header(sheet, qa_teams: List[Team], offset: Pos) -> Region:
@@ -438,9 +505,9 @@ def _create_cells_for_qa_issue(issue: Issue, qa_teams: List[Team], offset: Pos) 
 
 
 def _create_qa_activities_table(
-    sheet, product_release: ProductRelease, teams: List[Team], offset: Pos
+    sheet, project: Project, teams: List[Team], offset: Pos
 ) -> Tuple[Dict[Team, List[CellReference]], Region]:
-    qa_owned_issues = [x for x in product_release.issues if x.owned_by_team.is_qa()]
+    qa_owned_issues = [x for x in project.issues if x.owned_by_team.is_qa()]
     if not qa_owned_issues:
         return dict(), Region(offset, 1, 0)
 
@@ -459,13 +526,13 @@ def _create_qa_activities_table(
             cell_format=formats.numeric_format
         )
 
-        col = 1
+        col = 2
         for team in qa_teams:
             if team not in total_cells_by_teams:
                 total_cells_by_teams[team] = []
 
             total_cells_by_teams[team].append(
-                CellReference(RelPos(rel_offset, column=col, sheet_name=product_release.name), issue.issue_summary)
+                CellReference(RelPos(rel_offset, column=col, sheet_name=project.name), issue.issue_summary)
             )
             col += 1
 
@@ -477,14 +544,18 @@ def _create_qa_activities_table(
         Region(header_table.offset, header_table.rows + len(qa_owned_issues) + 1, header_table.columns)
 
 
-def fill_release_worksheet(
-    sheet, product_release: ProductRelease, teams: List[Team]
-) -> Dict[Team, List[CellReference]]:
+def fill_project_worksheet(sheet, project: Project, teams: List[Team]) -> Dict[Team, List[CellReference]]:
+    total_cells_by_team, project_table = _create_dev_activities_table(sheet, project, teams)
 
-    total_cells_by_dev_team, release_table = _create_dev_activities_table(sheet, product_release, teams)
-
-    total_cells_by_qa_team, _ = _create_qa_activities_table(
-        sheet, product_release, teams, RelPos(release_table.pos_below(), 2)
+    total_bugs_by_dev_team, bugs_table = _create_known_bugs_table(
+        sheet, project, teams, RelPos(project_table.pos_below(), 2)
     )
 
-    return merge_dicts(total_cells_by_dev_team, total_cells_by_qa_team)
+    total_cells_by_qa_team, _ = _create_qa_activities_table(
+        sheet, project, teams, RelPos(bugs_table.pos_below(), 2)
+    )
+
+    return merge_dicts(
+        total_bugs_by_dev_team,
+        merge_dicts(total_cells_by_team, total_cells_by_qa_team)
+    )

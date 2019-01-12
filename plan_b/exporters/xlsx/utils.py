@@ -62,24 +62,25 @@ def write_row(
     for item in cell_generator:
 
         cell_write_func = sheet.write
+        current_cell_format = None
         if isinstance(item, list):
             if isinstance(item[0], dict):
                 value, cell_write_func_name = item[0], item[1]
                 cell_write_func = getattr(sheet, cell_write_func_name)
             else:
-                value, cell_format = item[0], item[1]
+                value, current_cell_format = item[0], item[1]
         else:
             value = item
-            cell_format = cell_format
+            current_cell_format = cell_format
 
         cell_value = cell_func(column, value) if cell_func else value
         if isinstance(cell_value, str) and cell_value.startswith('='):
-            sheet.write_formula(offset.row, column, cell_value, cell_format)
+            sheet.write_formula(offset.row, column, cell_value, current_cell_format)
         else:
             if isinstance(cell_value, dict):
                 cell_write_func(offset.row, column, **cell_value)
             else:
-                cell_write_func(offset.row, column, cell_value, cell_format)
+                cell_write_func(offset.row, column, cell_value, current_cell_format)
         column += 1
 
     columns_written = column - offset.column

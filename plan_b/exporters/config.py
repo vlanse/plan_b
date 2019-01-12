@@ -10,7 +10,7 @@ import yaml
 from yarl import URL
 
 from plan_b.team import Team, make_worker, Worker, make_team
-from plan_b.plan import ProductRelease, CapacityPlan, IssuesDataSource
+from plan_b.plan import Project, CapacityPlan, IssuesDataSource
 from plan_b.date_utils import get_months_range
 from plan_b.exporters.xlsx import export_plan
 from plan_b.exporters.xlsx.metadata import load_metadata
@@ -30,16 +30,16 @@ def read_teams_from_config(config: dict) -> List[Team]:
             workers.append(
                 make_worker(name=m['name'], efficiency=m.get('efficiency'), works_since=m.get('works_since'))
             )
-        teams.append(make_team(t['name'], workers))
+        teams.append(make_team(t['name'], workers, bugfix_rate=t.get('bugfix_rate')))
     return teams
 
 
-def read_releases_from_config(config: dict) -> List[ProductRelease]:
-    releases = []
-    for r in config.get('releases', []):
-        r = ProductRelease(r['name'], r['data_query'])
-        releases.append(r)
-    return releases
+def read_projects_from_config(config: dict) -> List[Project]:
+    projects = []
+    for r in config.get('projects', []):
+        r = Project(r['name'], r['data_query'])
+        projects.append(r)
+    return projects
 
 
 def read_data_sources_from_config(config: dict) -> List[IssuesDataSource]:
@@ -47,7 +47,6 @@ def read_data_sources_from_config(config: dict) -> List[IssuesDataSource]:
     for ds in config.get('issue_data_sources', []):
         if ds['type'] != 'jira':
             raise RuntimeError(f'Unknown data source type {ds["type"]}')
-
         sources.append(JiraIssuesDataSource(ds['name'], URL(ds['url'])))
     return sources
 
@@ -102,11 +101,11 @@ class XlsxCapacityPlan(CapacityPlan):
             log.info('Changes loaded, removing previous file and creating a new one inplace')
             os.unlink(self._output_file)
 
-        self._export_issues_for_releases()
+        self._export_issues_for_projects()
 
         log.info('Exporting plan to file %s', self._output_file)
         export_plan(
-            self.releases,
+            self.projects,
             self.teams,
             self.start_date,
             self.end_date,
@@ -130,12 +129,12 @@ def make_capacity_plan_from_config(config_file_path: str) -> XlsxCapacityPlan:
             raise RuntimeError(f'Invalid plan teams configuration for "{t}", found {len(team)} items')
         teams.append(team[0])
 
-    releases = []
-    for r in p['releases']:
-        release = list(filter(lambda x: x.name == r, read_releases_from_config(config)))
-        if len(release) != 1:
-            raise RuntimeError(f'Invalid plan releases configuration for "{r}", found {len(release)} items')
-        releases.append(release[0])
+    projects = []
+    for r in p['projects']:
+        project = list(filter(lambda x: x.name == r, read_projects_from_config(config)))
+        if len(project) != 1:
+            raise RuntimeError(f'Invalid plan projects configuration for "{r}", found {len(project)} items')
+        projects.append(project[0])
 
     ds_name = p['data_source']
     data_sources = list(filter(lambda x: x.name == ds_name, read_data_sources_from_config(config)))
@@ -148,5 +147,5 @@ def make_capacity_plan_from_config(config_file_path: str) -> XlsxCapacityPlan:
         production_calendar=make_production_calendar(config.get('production_calendar', dict())),
         issues_data_source=data_sources[0],
         teams=teams,
-        releases=releases
+        projects=projects
     )

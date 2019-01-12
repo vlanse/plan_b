@@ -52,6 +52,7 @@ def _make_comment(author, body):
 
 
 def comments_side_effect(issue):
+    # A1 project
     if issue.key == 'A-00001':
         return [
             _make_comment('V.Ivanov', '#plan reqs: hi, design: med, impl: 10d, doc: 1d, arch: 1d'),
@@ -67,23 +68,47 @@ def comments_side_effect(issue):
             _make_comment('V.Ivanov', '#plan reqs: lo, design: med, impl: 1d, doc: 1d'),
             _make_comment('J.Smith', '#plan reqs: med, design: lo, impl: 1w, doc: 1d'),
             _make_comment('B.Smithson', '#plan qa: 5d'),
+            _make_comment('A.Testerson', '#plan qa: 1d'),
         ]
     elif issue.key == 'A-00005':
         return [
             _make_comment('V.Ivanov', '#plan reqs: lo, design: med, impl: 1d, doc: 1d'),
         ]
+    # B2U4 project
     elif issue.key == 'A-00050':
         return [
             _make_comment('J.Smith', '#plan reqs: lo, design: lo, impl: 5w, doc: 1d, arch: 3d'),
+            _make_comment('A.Testerson', '#plan qa: 3d'),
+            _make_comment('B.Smithson', '#plan qa: 1d'),
         ]
     elif issue.key == 'A-00051':
         return [
             _make_comment('V.Ivanov', '#plan reqs: hi, design: lo, impl: 10w, doc: 1d, arch: 4d'),
+            _make_comment('A.Testerson', '#plan qa: 2d'),
+            _make_comment('B.Smithson', '#plan qa: 2d'),
         ]
+    # qa specific epics
     elif issue.key == 'A-00006':
         return [
             _make_comment('B.Smithson', '#plan qa: 1w'),
+            _make_comment('A.Testerson', '#plan qa: 2w')
+        ]
+    elif issue.key == 'A-00007':
+        return [
+            _make_comment('B.Smithson', '#plan qa: 3w'),
+            _make_comment('A.Testerson', '#plan qa: 4w')
+        ]
+    elif issue.key == 'A-00008':
+        return [
+            _make_comment('B.Smithson', '#plan qa: 3w'),
+        ]
+    elif issue.key == 'A-00009':
+        return [
             _make_comment('A.Testerson', '#plan qa: 1w')
+        ]
+    elif issue.key == 'A-00010':
+        return [
+            _make_comment('B.Smithson', '#plan qa: 1w'),
         ]
     return []
 
@@ -106,11 +131,19 @@ def issues_side_effect(data_query, **_):
             _make_mock_issue('A-00008', 'Epic', 'A1 Regress', assignee='B.Smithson'),
             _make_mock_issue('A-00009', 'Epic', 'A1 Verification', assignee='B.Smithson'),
             _make_mock_issue('A-00010', 'Epic', 'A1 Production acceptance', assignee='B.Smithson'),
+            _make_mock_issue('A-00021', 'Bug', '', assignee='V.Ivanov'),
+            _make_mock_issue('A-00022', 'Bug', '', assignee='J.Smith'),
+            _make_mock_issue('A-00023', 'Bug', '', assignee='J.Smith'),
+            _make_mock_issue('A-00024', 'Bug', '', assignee='J.Smith'),
         ]
     elif 'B2U4' in data_query:
         return [
             _make_mock_issue('A-00050', 'Epic', 'Make go services great again', assignee='V.Ivanov'),
             _make_mock_issue('A-00051', 'Epic', 'Earn 10 billion $$$ for the company', assignee='V.Ivanov'),
+            _make_mock_issue('A-00061', 'Bug', '', assignee='V.Ivanov'),
+            _make_mock_issue('A-00062', 'Bug', '', assignee='V.Ivanov'),
+            _make_mock_issue('A-00063', 'Bug', '', assignee='V.Ivanov'),
+            _make_mock_issue('A-00064', 'Bug', '', assignee='J.Smith'),
         ]
 
 

@@ -3,16 +3,16 @@ from typing import Dict, List
 from xlsxwriter import Workbook
 
 from plan_b.team import Team
-from plan_b.plan import ProductRelease
+from plan_b.plan import Project
 from plan_b.exporters.xlsx.formats import init_formats
 from plan_b.exporters.xlsx.metadata import save_metadata, TeamAllocation
-from plan_b.exporters.xlsx.release import fill_release_worksheet
+from plan_b.exporters.xlsx.project import fill_project_worksheet
 from plan_b.exporters.xlsx.team_calendar import fill_calendar_plan_worksheet, apply_plan_edits_to_team_calendar
 from plan_b.exporters.xlsx.utils import write_row, Region, Pos, RelPos, merge_dicts
 
 
 def export_plan(
-    releases: List[ProductRelease],
+    projects: List[Project],
     teams: List[Team],
     start_date: date,
     end_date: date,
@@ -27,15 +27,15 @@ def export_plan(
     for team in teams:
         sheets_by_team[team] = workbook.add_worksheet(team.name)
 
-    sheets_by_release = {}
-    for product_release in releases:
-        sheets_by_release[product_release] = workbook.add_worksheet(product_release.name)
+    sheets_by_project = {}
+    for project in projects:
+        sheets_by_project[project] = workbook.add_worksheet(project.name)
 
     total_cells_by_team = {}
-    for product_release, sheet in sheets_by_release.items():
+    for project, sheet in sheets_by_project.items():
         total_cells_by_team = merge_dicts(
             total_cells_by_team,
-            fill_release_worksheet(sheet, product_release, teams)
+            fill_project_worksheet(sheet, project, teams)
         )
 
     team_allocation_regions: Dict[Team, Dict[str, Region]] = {}
@@ -46,7 +46,7 @@ def export_plan(
             end_date,
             team,
             production_calendar,
-            releases,
+            projects,
             total_cells_by_team[team]
         )
 
