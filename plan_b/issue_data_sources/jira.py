@@ -95,7 +95,7 @@ class JiraIssuesDataSource(IssuesDataSource):
             if estimate is None:
                 continue
             if team_name is None:
-                log.warning('Could not match team for %s', jira_issue.key)
+                log.warning('Could not match team for %s', jira_issue.url)
             estimates_by_team[team_name] = estimate
 
         return estimates_by_team
@@ -121,7 +121,7 @@ class JiraIssuesDataSource(IssuesDataSource):
                 epics.add(jira_issue.key)
             if jira_issue.type in ('Epic', 'Story'):
                 epics_and_stories.append(jira_issue)
-            if jira_issue.type in ('Bug', 'Bug US'):
+            if jira_issue.type in ('Bug', 'Bug US') and jira_issue.status.lower() in ['open', 'in progress']:
                 known_bugs.append(jira_issue)
 
         filtered_epics_and_stories = []
@@ -141,7 +141,7 @@ class JiraIssuesDataSource(IssuesDataSource):
 
             owner_team = match_team_by_worker_name(issue.assignee.name, teams)
             if owner_team is None:
-                log.warning('Owner team is not a team from plan for %s', issue.key)
+                log.warning('Owner team is not a team from plan for %s', issue.url)
             epics_and_stories.append(
                 Issue(
                     issue.key,
@@ -155,7 +155,15 @@ class JiraIssuesDataSource(IssuesDataSource):
 
         known_bugs_count = {x: 0 for x in teams if x.is_dev()}
         for bug in known_bugs:
+            if not bug.assignee:
+                log.warning(f'Empty or invalid assignee for bug %s', bug.url)
+                continue
+
             bug_owner_team = match_team_by_worker_name(bug.assignee.name, teams)
-            known_bugs_count[bug_owner_team] += 1
+            if bug_owner_team:
+                if bug_owner_team.is_dev():
+                    known_bugs_count[bug_owner_team] += 1
+                else:
+                    log.warning('Invalid owner team for bug %s', bug.url)
 
         return epics_and_stories, known_bugs_count
