@@ -16,7 +16,7 @@ MockFields = namedtuple('MockFields', [
 
 def _make_mock_issue(
     key, issue_type, summary, assignee=None, reporter=None, created=None, resolved=None, due=None,
-    time_spent=None, severity=None, priority=None, components=None, tags=None, qa_advice=None, status=None,
+    time_spent=None, severity=None, priority=None, components=None, tags=None, qa_advice=None, status='open',
     resolution=None, epic_link=None, comments=None, aggregated_orig_estimate=None, orig_estimate=None
 ):
     return MockIssue(
@@ -140,7 +140,7 @@ def issues_side_effect(data_query, **_):
         return [
             _make_mock_issue('A-00050', 'Epic', 'Make go services great again', assignee='V.Ivanov'),
             _make_mock_issue('A-00051', 'Epic', 'Earn 10 billion $$$ for the company', assignee='V.Ivanov'),
-            _make_mock_issue('A-00061', 'Bug', '', assignee='V.Ivanov'),
+            _make_mock_issue('A-00061', 'Bug', '', assignee='V.Ivanov', status='in progress'),
             _make_mock_issue('A-00062', 'Bug', '', assignee='V.Ivanov'),
             _make_mock_issue('A-00063', 'Bug', '', assignee='V.Ivanov'),
             _make_mock_issue('A-00064', 'Bug', '', assignee='J.Smith'),

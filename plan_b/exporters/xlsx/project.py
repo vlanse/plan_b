@@ -334,7 +334,7 @@ def _add_totals_row(sheet, region: Region, skip_columns: int = 0):
 def _create_dev_activities_table(
     sheet, project: Project, teams: List[Team], offset=Pos()
 ) -> Tuple[Dict[Team, CellReference], Region]:
-    dev_owned_issues = [x for x in project.issues if x.owned_by_team.is_dev()]
+    dev_owned_issues = [x for x in project.issues if x.owned_by_team is not None and x.owned_by_team.is_dev()]
     if not dev_owned_issues:
         return dict(), Region(offset, 1, 0)
 
@@ -406,6 +406,10 @@ def _create_known_bugs_table_header(sheet, offset: Pos) -> Region:
 def calculate_new_bugs_count_for_project(project: Project, team: Team) -> int:
     new_bugs_count = 0
     for issue in project.issues:
+        if issue.issue_status.lower() in ('closed', 'resolved', 'done'):
+            # all bugs should already be solved here
+            continue
+
         estimate = issue.orig_estimates_by_team.get(team.name)
         if estimate is not None:
             new_bugs_count += \
@@ -507,7 +511,7 @@ def _create_cells_for_qa_issue(issue: Issue, qa_teams: List[Team], offset: Pos) 
 def _create_qa_activities_table(
     sheet, project: Project, teams: List[Team], offset: Pos
 ) -> Tuple[Dict[Team, List[CellReference]], Region]:
-    qa_owned_issues = [x for x in project.issues if x.owned_by_team.is_qa()]
+    qa_owned_issues = [x for x in project.issues if x.owned_by_team is not None and x.owned_by_team.is_qa()]
     if not qa_owned_issues:
         return dict(), Region(offset, 1, 0)
 
