@@ -26,26 +26,56 @@ def upgrade():
     )
 
     op.create_table(
+        'team',
+        sa.Column('id', postgresql.INTEGER(), nullable=False, primary_key=True),
+        sa.Column('name', postgresql.VARCHAR(255), nullable=False),
+        sa.Column('bugfix_rate', postgresql.FLOAT(), nullable=False),
+    )
+
+    op.create_table(
         'project_history',
-        sa.Column('project_id', postgresql.INTEGER(), nullable=False),
         sa.Column('begin_datetime', postgresql.TIMESTAMP(), nullable=False),
         sa.Column('end_datetime', postgresql.TIMESTAMP(), nullable=True),
+        sa.Column('project_id', postgresql.INTEGER(), nullable=False),
         sa.Column('scope_complete_datetime', postgresql.TIMESTAMP(), nullable=False),
         sa.Column('feature_complete_datetime', postgresql.TIMESTAMP(), nullable=False),
         sa.Column('ready_to_manufacture_datetime', postgresql.TIMESTAMP(), nullable=False),
+        sa.Column('owner_team_id', postgresql.INTEGER(), nullable=False),
         sa.Column('comment', postgresql.TEXT(), nullable=True),
         sa.ForeignKeyConstraint(
             ('project_id',),
             ('project.id',),
             name='project_history_project_id_fk',
         ),
+        sa.ForeignKeyConstraint(
+            ('owner_team_id',),
+            ('team.id',),
+            name='project_history_owner_team_id_fk',
+        ),
         sa.UniqueConstraint('begin_datetime', 'project_id', name='project_history_begin_datetime_project_id_idx'),
     )
 
     op.create_table(
-        'team',
-        sa.Column('id', postgresql.INTEGER(), nullable=False, primary_key=True),
-        sa.Column('name', postgresql.VARCHAR(255), nullable=False),
+        'known_bugs_count_history',
+        sa.Column('begin_datetime', postgresql.TIMESTAMP(), nullable=False),
+        sa.Column('end_datetime', postgresql.TIMESTAMP(), nullable=True),
+        sa.Column('project_id', postgresql.INTEGER(), nullable=False),
+        sa.Column('team_id', postgresql.INTEGER(), nullable=False),
+        sa.Column('known_bugs_count', postgresql.INTEGER(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ('project_id',),
+            ('project.id',),
+            name='project_history_project_id_fk',
+        ),
+        sa.ForeignKeyConstraint(
+            ('team_id',),
+            ('team.id',),
+            name='project_history_owner_team_id_fk',
+        ),
+        sa.UniqueConstraint(
+            'begin_datetime', 'project_id', 'team_id',
+            name='known_bugs_count_history_begin_datetime_project_id_team_id_idx'
+        ),
     )
 
     op.create_table(
@@ -63,7 +93,7 @@ def upgrade():
         sa.Column('person_id', postgresql.INTEGER(), nullable=False),
         sa.Column('team_id', postgresql.INTEGER(), nullable=False),
         sa.Column('project_id', postgresql.INTEGER(), nullable=False),
-        sa.Column('efficiency', postgresql.FLOAT(), nullable=False),
+        sa.Column('project_assignment', postgresql.FLOAT(), nullable=False),
         sa.Column('comment', postgresql.TEXT(), nullable=True),
         sa.ForeignKeyConstraint(
             ('person_id',),

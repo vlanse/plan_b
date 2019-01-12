@@ -1,6 +1,6 @@
 import logging
 from collections import namedtuple, defaultdict
-from typing import List
+from typing import Dict, List, Tuple
 
 import jira
 from dateutil import parser
@@ -100,7 +100,7 @@ class JiraIssuesDataSource(IssuesDataSource):
 
         return estimates_by_team
 
-    def export_issues(self, data_query: str, teams: List[Team]) -> List[Issue]:
+    def export_issues(self, data_query: str, teams: List[Team]) -> Tuple[List[Issue], Dict[Team, int]]:
         if not self.jira_client:
             self.jira_client = jira.JIRA(
                 {
@@ -109,39 +109,40 @@ class JiraIssuesDataSource(IssuesDataSource):
                 basic_auth=(self.url.user, self.url.password)
             )
 
-        jira_issues = []
+        epics_and_stories = []
+        known_bugs = []
         epics = set()
 
-        log.debug('Searching issues for release with query "%s"', data_query)
+        log.debug('Searching issues for project with query "%s"', data_query)
         raw_issues = self.jira_client.search_issues(data_query, maxResults=10000)
         for raw_issue in raw_issues:
             jira_issue = make_jira_issue_from_raw_data(raw_issue)
             if jira_issue.type == 'Epic':
                 epics.add(jira_issue.key)
-            jira_issues.append(jira_issue)
+            if jira_issue.type in ('Epic', 'Story'):
+                epics_and_stories.append(jira_issue)
+            if jira_issue.type in ('Bug', 'Bug US'):
+                known_bugs.append(jira_issue)
 
-        result = []
-        for issue in jira_issues:
+        filtered_epics_and_stories = []
+        for issue in epics_and_stories:
             if issue.type == 'Story' and issue.epic_link in epics:
                 continue  # skip stories that are already in epics assigned to teams from plan
-
             log.debug('loading comments for issue %s', issue.key)
             comments = self.jira_client.comments(issue.raw_issue)
             issue = issue._replace(comments=tuple(JiraComment(x.author.name, x.body) for x in comments))
+            filtered_epics_and_stories.append(issue)
 
-            result.append(issue)
-
-        issues = []
-
+        epics_and_stories = []
         teams_by_name = {x.name: x for x in teams}
-        for issue in result:
+        for issue in filtered_epics_and_stories:
             log.debug('Scanning for #plan comment in issue %s', issue.key)
             estimates = self._find_and_parse_plan_comment(issue, teams_by_name)
 
             owner_team = match_team_by_worker_name(issue.assignee.name, teams)
             if owner_team is None:
                 log.warning('Owner team is not a team from plan for %s', issue.key)
-            issues.append(
+            epics_and_stories.append(
                 Issue(
                     issue.key,
                     issue.summary,
@@ -152,4 +153,9 @@ class JiraIssuesDataSource(IssuesDataSource):
                 )
             )
 
-        return issues
+        known_bugs_count = {x: 0 for x in teams if x.is_dev()}
+        for bug in known_bugs:
+            bug_owner_team = match_team_by_worker_name(bug.assignee.name, teams)
+            known_bugs_count[bug_owner_team] += 1
+
+        return epics_and_stories, known_bugs_count

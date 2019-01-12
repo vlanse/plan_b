@@ -22,6 +22,7 @@ production_calendar:
 
 teams:
   - name: Team Alpha
+    bugfix_rate: 0.8
     members:
       - name: V.Ivanov
         efficiency: 0.5
@@ -35,6 +36,7 @@ teams:
         works_since: 2018-10-01
 
   - name: Team Beta
+    bugfix_rate: 0.7
     members:
       - name: J.Smith
         efficiency: 0.8
@@ -57,7 +59,7 @@ teams:
       - name: B.Shniperson
         efficiency: 0.5
 
-releases:
+projects:
   - name: A1
     data_query: some query for A1
 
@@ -77,6 +79,6 @@ plan:
     - Team QA Alpha
     - Team QA Beta
 
-  releases:
+  projects:
     - A1
     - B2U4

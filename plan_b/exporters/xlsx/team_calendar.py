@@ -2,7 +2,7 @@ from datetime import date
 from typing import List, Dict
 
 from plan_b.team import Team
-from plan_b.plan import ProductRelease
+from plan_b.plan import Project
 from plan_b.date_utils import get_months_range, get_month_workdays_count
 from plan_b.exporters.xlsx.utils import Pos, Region, write_row, RelPos
 
@@ -52,7 +52,7 @@ def _create_team_calendar_table(
     start_date: date,
     end_date: date,
     production_calendar: dict,
-    releases: List[ProductRelease],
+    projects: List[Project],
     total_cells: List[CellReference]
 ) -> Dict[str, Region]:
 
@@ -154,13 +154,13 @@ def _create_team_calendar_table(
         sheet.write(
             offset.row,
             offset.column + i,
-            f'={RelPos(offset, - len(releases) - 1, i).to_cell()}'
-            f'-SUM({RelPos(offset, - len(releases), i).to_cell()}:{RelPos(offset, - 1, i).to_cell()})',
+            f'={RelPos(offset, - len(projects) - 1, i).to_cell()}'
+            f'-SUM({RelPos(offset, - len(projects), i).to_cell()}:{RelPos(offset, - 1, i).to_cell()})',
             formats.bold_total_format
         )
 
-    # summary by release rows
-    offset = RelPos(offset, len(releases))
+    # summary by project rows
+    offset = RelPos(offset, len(projects))
     write_row(
         sheet, offset, cell_generator=['Item', 'Needed', 'Allocated', 'Diff'], cell_format=formats.green_header_format
     )
@@ -191,7 +191,7 @@ def fill_calendar_plan_worksheet(
     end_date: date,
     team: Team,
     production_calendar: dict,
-    releases: List[ProductRelease],
+    projects: List[Project],
     total_cells: List[CellReference]
 ) -> Dict[str, Region]:
     capacity_table = _create_team_capacity_table(sheet, start_date, end_date, team)
@@ -202,7 +202,7 @@ def fill_calendar_plan_worksheet(
         start_date,
         end_date,
         production_calendar,
-        releases,
+        projects,
         total_cells
     )
 

@@ -9,6 +9,9 @@ green_header_format = None
 BOLD_TOTAL = {'bold': True, 'bg_color': 'yellow', 'num_format': '0.0', 'top': 1, 'bottom': 1}
 bold_total_format = None
 
+BOLD_TOTAL_NO_BORDERS = {'bold': True, 'bg_color': 'yellow', 'num_format': '0.0'}
+bold_total_no_borders_format = None
+
 CENTERED_HEADER = {
     'align': 'center',
     'valign': 'top',
@@ -111,6 +114,9 @@ def init_formats(workbook: Workbook):
 
     global bold_total_format
     bold_total_format = workbook.add_format(BOLD_TOTAL)
+
+    global bold_total_no_borders_format
+    bold_total_no_borders_format = workbook.add_format(BOLD_TOTAL_NO_BORDERS)
 
     global centered_header_format
     centered_header_format = workbook.add_format(CENTERED_HEADER)

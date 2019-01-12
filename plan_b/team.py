@@ -59,8 +59,9 @@ class Team:
 
 class DevTeam(Team):
 
-    def __init__(self, name: str, members: List[Worker] = None):
+    def __init__(self, name: str, bugfix_rate: float, members: List[Worker] = None):
         super().__init__(name, members)
+        self.bugfix_rate = bugfix_rate
 
     @staticmethod
     def is_dev():
@@ -77,10 +78,10 @@ class QATeam(Team):
         return True
 
 
-def make_team(name: str, workers: List[Worker] = None):
+def make_team(name: str, workers: List[Worker] = None, bugfix_rate: float = None):
     if 'qa' in name.lower():
         return QATeam(name, workers)
-    return DevTeam(name, workers)
+    return DevTeam(name, bugfix_rate, workers)
 
 
 def match_team_by_worker_name(worker_name: str, teams: List[Team]) -> Team:
