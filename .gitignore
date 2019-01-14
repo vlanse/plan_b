@@ -18,6 +18,7 @@ coverage*
 *.mo
 *.xlsx
 *.xls
+!/tests/cli/data/test.xlsx
 build/
 upload_local/
 docker-env/
